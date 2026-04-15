@@ -1,175 +1,153 @@
 #include <iostream>
 #include <string>
+
 using namespace std;
 
-struct package {
-    string packageid;
-    string destinationcity;
+struct Package {
+    string packageID;
+    string destinationCity;
     int dimensions[3];
-    package* next;
+    Package* next;
 };
 
-struct courier {
-    string couriername;
-    string vehicletype;
+struct Courier {
+    string courierName;
+    string vehicleType;
 };
 
-class packagestack {
+class PackageStack {
 private:
-    package* top;
-
+    Package* top;
 public:
-    packagestack() {
-        top = NULL;
-    }
-
-    bool isempty() {
-        return top == NULL;
-    }
+    PackageStack() { top = nullptr; }
 
     void push(string id, string city, int l, int w, int h) {
-        package* p = new package();
-        p->packageid = id;
-        p->destinationcity = city;
-        p->dimensions[0] = l;
-        p->dimensions[1] = w;
-        p->dimensions[2] = h;
-
-        p->next = top;
-        top = p;
-
-        cout << "package added\n";
+        Package* newPkg = new Package();
+        newPkg->packageID = id;
+        newPkg->destinationCity = city;
+        newPkg->dimensions[0] = l; newPkg->dimensions[1] = w; newPkg->dimensions[2] = h;
+        newPkg->next = top;
+        top = newPkg;
+        cout << "Paket eklendi: " << id << endl;
     }
 
-    void pop() {
-        if (isempty()) return;
-
-        package* temp = top;
+    Package* pop() {
+        if (top == nullptr) return nullptr;
+        Package* temp = top;
         top = top->next;
-        delete temp;
+        return temp;
     }
 
-    package* peek() {
-        return top;
-    }
-
-    void show() {
-        if (isempty()) {
-            cout << "stack empty\n";
-            return;
-        }
-
-        package* cur = top;
-        while (cur != NULL) {
-            cout << cur->packageid << " -> " << cur->destinationcity << " ("
-                 << cur->dimensions[0] << ","
-                 << cur->dimensions[1] << ","
-                 << cur->dimensions[2] << ")\n";
-            cur = cur->next;
+    void display() {
+        cout << "\n--- PAKET YIGINI ---\n";
+        Package* temp = top;
+        if (!temp) cout << "Yigin bos.\n";
+        while (temp) {
+            cout << "ID: " << temp->packageID << " | Sehir: " << temp->destinationCity << endl;
+            temp = temp->next;
         }
     }
 };
 
-class courierqueue {
+class CourierQueue {
 private:
-    static const int size = 5;
-    courier arr[size];
-    int front, rear, count;
+    static const int SIZE = 5;
+    Courier items[SIZE];
+    int front, rear;
 
 public:
-    courierqueue() {
-        front = 0;
+    CourierQueue() {
+        front = -1;
         rear = -1;
-        count = 0;
     }
 
-    bool isempty() {
-        return count == 0;
+    bool isFull() {
+        return (front == 0 && rear == SIZE - 1) || (front == rear + 1);
     }
 
-    bool isfull() {
-        return count == size;
+    bool isEmpty() {
+        return front == -1;
     }
 
     void enqueue(string name, string vehicle) {
-        if (isfull()) {
-            cout << "queue full\n";
+        if (isFull()) {
+            cout << "Kurye sirasi dolu!\n";
             return;
         }
-
-        rear = (rear + 1) % size;
-        arr[rear].couriername = name;
-        arr[rear].vehicletype = vehicle;
-        count++;
+        if (front == -1) front = 0;
+        rear = (rear + 1) % SIZE;
+        items[rear].courierName = name;
+        items[rear].vehicleType = vehicle;
+        cout << "Kurye eklendi: " << name << endl;
     }
 
-    void dequeue() {
-        if (isempty()) return;
-
-        front = (front + 1) % size;
-        count--;
+    Courier dequeue() {
+        Courier empty = {"", ""};
+        if (isEmpty()) return empty;
+        Courier element = items[front];
+        if (front == rear) {
+            front = -1;
+            rear = -1;
+        } else {
+            front = (front + 1) % SIZE;
+        }
+        return element;
     }
 
-    courier* peek() {
-        if (isempty()) return NULL;
-        return &arr[front];
-    }
-
-    void show() {
-        if (isempty()) {
-            cout << "queue empty\n";
+    void display() {
+        cout << "\n--- KURYELER ---\n";
+        if (isEmpty()) {
+            cout << "Kurye sirasi bos.\n";
             return;
         }
-
-        for (int i = 0; i < count; i++) {
-            int index = (front + i) % size;
-            cout << arr[index].couriername << " (" << arr[index].vehicletype << ")\n";
+        int i;
+        for (i = front; i != rear; i = (i + 1) % SIZE) {
+            cout << "Isim: " << items[i].courierName << " (" << items[i].vehicleType << ")\n";
         }
+        cout << "Isim: " << items[i].courierName << " (" << items[i].vehicleType << ")\n";
     }
 };
 
-    package* p = stack.peek();
-    courier* c = queue.peek();
-
-    cout << c->couriername << " delivers " << p->packageid
-         << " to " << p->destinationcity << endl;
-
-    stack.pop();
-    queue.dequeue();
-}
-
 int main() {
-    packagestack stack;
-    courierqueue queue;
-
+    PackageStack stack;
+    CourierQueue queue;
     int choice;
 
-    do {
-        cout << "\n1 add package\n2 add courier\n3 dispatch\n4 show\n5 exit\n";
+    while (true) {
+        cout << "\n1. Paket Ekle\n2. Kurye Ekle\n3. Sevkiyat\n4. Listele\n5. Cikis\nSecim: ";
         cin >> choice;
 
         if (choice == 1) {
             string id, city;
             int l, w, h;
-            cin >> id >> city >> l >> w >> h;
+            cout << "ID ve Sehir: "; cin >> id >> city;
+            cout << "Boyutlar (L W H): "; cin >> l >> w >> h;
             stack.push(id, city, l, w, h);
-        }
+        } 
         else if (choice == 2) {
-            string name, vehicle;
-            cin >> name >> vehicle;
-            queue.enqueue(name, vehicle);
-        }
+            string name, vtype;
+            cout << "Ad ve Arac: "; cin >> name >> vtype;
+            queue.enqueue(name, vtype);
+        } 
         else if (choice == 3) {
-            dispatch(stack, queue);
-        }
+            if (queue.isEmpty()) {
+                cout << "Kurye yok!\n";
+            } else {
+                Package* p = stack.pop();
+                if (p == nullptr) {
+                    cout << "Paket yok!\n";
+                } else {
+                    Courier c = queue.dequeue();
+                    cout << "SEVKIYAT: " << c.courierName << " -> " << p->packageID << " (" << p->destinationCity << ")\n";
+                    delete p;
+                }
+            }
+        } 
         else if (choice == 4) {
-            cout << "packages:\n";
-            stack.show();
-            cout << "couriers:\n";
-            queue.show();
-        }
-
-    } while (choice != 5);
-
+            stack.display();
+            queue.display();
+        } 
+        else if (choice == 5) break;
+    }
     return 0;
 }
